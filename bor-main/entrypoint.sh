@@ -26,8 +26,10 @@ echo ""
 if [ -f .env ]; then
     echo "🔧 Loading environment variables from .env..."
     # Export variables from .env file safely
+    # Only export lines that look like variable assignments (NAME=value)
     set -a
-    source .env
+    # shellcheck disable=SC1091
+    source <(grep -E '^[A-Z_][A-Z0-9_]*=' .env)
     set +a
     echo "✅ Environment variables loaded"
 else

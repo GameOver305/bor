@@ -19,9 +19,6 @@ COPY . .
 # Make entrypoint script executable
 RUN chmod +x entrypoint.sh
 
-# Create necessary directories
-RUN mkdir -p data/backups logs
-
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
