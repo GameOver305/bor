@@ -381,16 +381,7 @@ class CreateAllianceModal(ui.Modal, title="إنشاء تحالف جديد"):
             await interaction.response.send_message(f"❌ فشل إنشاء التحالف: {e}", ephemeral=True)
 
 
-def register_legacy_button_handlers():
-    """
-    تسجيل معالجات الأزرار القديمة من MainMenuView
-    هذه الأزرار تستخدم نظام callback مختلف ولكن نسجلها للتوافق
-    """
-    from utils.button_handler import button_handler
-    
-    # ملاحظة: MainMenuView يستخدم MenuButton مع callback_func مباشر
-    # لذلك لا حاجة لتسجيل معالجات إضافية، الأزرار ستعمل تلقائياً
-    # هذه الدالة موجودة للتوثيق فقط
-    
-    logger.info("✅ Legacy MainMenuView buttons use direct callbacks - no registration needed")
+# ملاحظة: MainMenuView يستخدم MenuButton مع callback_func مباشر
+# هذه الأزرار تعمل تلقائياً دون الحاجة لتسجيلها في button_handler
+# لأن MenuButton يحتوي على نظام callback خاص به
 

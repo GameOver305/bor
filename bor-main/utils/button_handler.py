@@ -109,7 +109,7 @@ class ButtonHandler:
         if not interaction.data:
             return None
         
-        return interaction.data.get('custom_id', None)
+        return interaction.data.get('custom_id')
     
     async def _send_error(self, interaction: discord.Interaction, error_msg: str):
         """
