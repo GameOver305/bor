@@ -26,11 +26,13 @@ echo ""
 if [ -f .env ]; then
     echo "🔧 Loading environment variables from .env..."
     # Export variables from .env file safely
-    # Only export lines that look like variable assignments (NAME=value)
-    set -a
-    # shellcheck disable=SC1091
-    source <(grep -E '^[A-Z_][A-Z0-9_]*=' .env)
-    set +a
+    # Filter out comments and empty lines, only keep valid variable assignments
+    while IFS='=' read -r key value; do
+        # Skip if key is empty or starts with #
+        [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+        # Export the variable
+        export "$key=$value"
+    done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env)
     echo "✅ Environment variables loaded"
 else
     echo "⚠️  Warning: .env file not found, using environment variables only"
