@@ -1,0 +1,429 @@
+# 🎮 بوت ديسكورد - نظام إدارة النجاة في الصقيع
+
+<div dir="rtl">
+
+## 📋 نظرة عامة
+
+بوت ديسكورد احترافي ومتقدم لإدارة حجز مواعيد في لعبة "النجاة في الصقيع". يوفر البوت واجهة تفاعلية حديثة **بالأزرار فقط** مع نظام إدارة شامل للحجوزات، التحالفات، والصلاحيات.
+
+## ✨ الميزات الرئيسية
+
+### 🎯 لوحة التحكم
+- واجهة بالأزرار فقط (بدون أوامر نصية)
+- دعم كامل للغة العربية والإنجليزية
+- تخزين تفضيلات كل مستخدم
+- أزرار رجوع في جميع القوائم
+
+### 📅 نظام الحجوزات
+- **ثلاثة أقسام:**
+  - 🏗️ مواعيد البناء
+  - 🔬 مواعيد الأبحاث
+  - ⚔️ مواعيد التدريب
+- منع التعارض في المواعيد
+- دعم مدة الحجز (بالأيام)
+- سجل كامل للحجوزات
+
+### 🤝 نظام التحالف
+- معلومات التحالف الكاملة
+- إدارة الأعضاء (للمخولين فقط)
+- نظام الرتب (R5 - R1)
+- صلاحيات مفصلة
+
+### 🔔 نظام التذكيرات
+- تذكيرات تلقائية قابلة للتكوين
+- إرسال رسائل خاصة
+- دعم أوقات متعددة (24h, 6h, 3h, 1h)
+
+### 🛡️ نظام الصلاحيات
+- صلاحيات المالك الكاملة
+- إضافة مشرفين
+- صلاحيات جزئية قابلة للتخصيص
+
+### 🗑️ تنظيف تلقائي
+- حذف الحجوزات المنتهية
+- تنظيف السجلات القديمة
+- لا يؤثر على الأداء
+
+## 🚀 التثبيت السريع
+
+```bash
+# 1. استنساخ المشروع
+git clone https://github.com/Dnager1/bor.git
+cd bor
+
+# 2. تثبيت المتطلبات
+pip install -r requirements.txt
+
+# 3. نسخ ملف البيئة
+cp .env.example .env
+
+# 4. تعديل .env بمعلوماتك
+# ضع DISCORD_BOT_TOKEN و OWNER_ID
+
+# 5. تشغيل البوت
+python bot.py
+```
+
+## 📖 التوثيق الكامل
+
+للحصول على دليل شامل للتثبيت والإعداد والاستخدام، يرجى الاطلاع على:
+- **[دليل النشر الكامل](DEPLOYMENT.md)** - تعليمات مفصلة
+
+## 🎮 الاستخدام
+
+1. دعوة البوت إلى السيرفر
+2. استخدام الأمر `/start`
+3. التنقل باستخدام الأزرار
+
+```
+📖 لوحة التحكم الرئيسية
+
+[🤝 التحالف]  [📅 الحجوزات]
+[⚙️ الإدارة]   [🌐 اللغة]  [👤 معلوماتي]
+```
+
+## 🔐 الصلاحيات
+
+- **المالك** - صلاحيات كاملة
+- **المشرفون** - إدارة التحالفات والحجوزات
+- **صلاحيات جزئية** - قابلة للتخصيص
+
+## 📊 التقنيات المستخدمة
+
+- Python 3.9+
+- discord.py 2.3.0+
+- SQLite (aiosqlite)
+- i18n (Arabic & English)
+
+## 📝 الترخيص
+
+هذا المشروع مرخص تحت MIT License.
+
+## 👥 المساهمة
+
+المساهمات مرحب بها! يرجى فتح Issue أو Pull Request.
+
+## 📧 الدعم
+
+لأي استفسارات أو مشاكل:
+- افتح Issue على GitHub
+- تواصل عبر Discord
+
+---
+
+**Made with ❤️ for White Survival Community**
+
+</div>
+
+---
+
+# Discord Bot - White Survival Management System
+
+A professional Discord bot for managing reservations and alliances in "White Survival" game with a complete button-based interface supporting Arabic and English.
+
+## Quick Start
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete installation and usage guide.
+
+## Features
+
+- ✅ Button-only interface (no text commands)
+- ✅ Full i18n support (Arabic & English)
+- ✅ Reservations system (Building, Training, Research)
+- ✅ Alliance management with ranks
+- ✅ Advanced permissions system
+- ✅ Auto-reminders (configurable times)
+- ✅ Auto-cleanup system
+
+## License
+
+MIT License
+- نسخ احتياطي تلقائي
+- إرسال إعلانات
+- سجلات كاملة للعمليات
+
+## 📦 المتطلبات
+
+- Python 3.8 أو أحدث
+- Discord Bot Token
+- الحزم المطلوبة (انظر `requirements.txt`)
+
+## 🚀 التثبيت السريع
+
+### 1. تحميل المشروع
+```bash
+git clone https://github.com/Dnager1/bor.git
+cd bor
+```
+
+### 2. تثبيت المتطلبات
+```bash
+pip install -r requirements.txt
+```
+
+### 3. إعداد ملف البيئة
+```bash
+cp .env.example .env
+```
+
+قم بتعديل ملف `.env` وأضف:
+- Discord Bot Token
+- معرفات الأدوار والقنوات
+- الإعدادات الأخرى
+
+### 4. تشغيل البوت
+```bash
+python bot.py
+```
+
+## 🌐 النشر على الاستضافات
+
+### WispByte و استضافات بدون Console
+
+إذا كنت تستخدم استضافة **WispByte** أو أي استضافة أخرى بدون Console مباشر:
+
+1. **راجع دليل النشر الشامل:**
+   - اقرأ [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) للحصول على تعليمات مفصلة
+   - يحتوي على خطوات خاصة بـ WispByte
+   - شرح كامل لرفع الملفات عبر File Manager
+
+2. **استخدم قائمة التحقق:**
+   - راجع [`UPDATE_CHECKLIST.md`](UPDATE_CHECKLIST.md) للتأكد من إكمال جميع الخطوات
+   - قوائم تحقق للنشر الأول والتحديثات
+   - خطوات اختبار النجاح
+
+### Docker
+
+```bash
+# بناء وتشغيل
+docker-compose up -d
+
+# عرض السجلات
+docker-compose logs -f
+```
+
+### VPS / Cloud Server
+
+```bash
+# تثبيت كخدمة systemd
+sudo nano /etc/systemd/system/booking-bot.service
+sudo systemctl enable booking-bot
+sudo systemctl start booking-bot
+```
+
+راجع [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) للتفاصيل الكاملة.
+
+## 🔄 تحديث البوت على الاستضافة
+
+### ⚠️ مهم جداً - قبل التحديث
+
+**لا تحذف أو تعدل:**
+- مجلد `data/` - يحتوي على قاعدة البيانات
+- ملف `.env` - يحتوي على الإعدادات
+- مجلد `logs/` - السجلات
+
+### خطوات التحديث السريعة
+
+#### على WispByte:
+1. **عمل نسخة احتياطية** - حمّل مجلد `data/` و `.env`
+2. **إيقاف البوت** من لوحة التحكم
+3. **رفع الملفات المحدثة** عبر File Manager
+4. **إعادة التشغيل** وراقب Console Logs
+
+#### على VPS:
+```bash
+# النسخ الاحتياطي
+cp -r data/ data_backup_$(date +%Y%m%d)/
+
+# التحديث
+git pull origin main
+pip install -r requirements.txt --upgrade
+
+# إعادة التشغيل
+sudo systemctl restart booking-bot
+```
+
+### 📋 قائمة التحقق من التحديث
+
+راجع [`UPDATE_CHECKLIST.md`](UPDATE_CHECKLIST.md) للحصول على:
+- ✅ قائمة كاملة بالملفات المطلوب تحديثها
+- ✅ الملفات التي يجب عدم حذفها
+- ✅ خطوات التحقق من نجاح التحديث
+- ✅ أوامر الاختبار في Discord
+- ✅ حلول للمشاكل الشائعة
+
+## 📚 الأوامر الأساسية
+
+### القائمة الرئيسية والمساعدة
+- `/start` - القائمة الرئيسية التفاعلية | Main Menu
+- `/menu` - نفس `/start` | Same as /start
+- `/help` - دليل المساعدة الكامل (رسالة خاصة) | Full Help Guide
+
+> 💡 جميع الأوامر تدعم اللغتين العربية والإنجليزية
+
+### أوامر الحجز
+- `/حجز` - إنشاء حجز جديد
+- `/مواعيدي` - عرض حجوزاتك النشطة
+- `/إلغاء [رقم]` - إلغاء حجز
+- `/جدول [نوع]` - عرض جدول المواعيد
+- `/complete [رقم]` - تأكيد إكمال حجز
+
+### أوامر الإحصائيات
+- `/mystats` - عرض إحصائياتك
+- `/leaderboard [عدد]` - لوحة المتصدرين
+
+### أوامر التحالفات
+- `/alliance create [اسم]` - إنشاء تحالف
+- `/alliance join [اسم]` - الانضمام لتحالف
+- `/alliance leave` - مغادرة التحالف
+- `/alliance info [اسم]` - معلومات التحالف
+
+### أوامر الإدارة (للمشرفين)
+- `/admin stats` - إحصائيات البوت
+- `/admin export` - تصدير البيانات
+- `/admin backup` - نسخة احتياطية
+- `/admin announce [رسالة]` - إرسال إعلان
+- `/admin clear` - حذف المنتهي
+- `/admin logs [عدد]` - عرض السجلات
+
+### المساعدة
+- `/help` - دليل استخدام شامل
+
+## 🗂️ هيكل المشروع
+
+```
+bor/
+├── bot.py                 # الملف الرئيسي
+├── config.py              # الإعدادات
+├── requirements.txt       # المكتبات
+├── .env.example          # مثال ملف البيئة
+│
+├── cogs/                 # وحدات البوت
+│   ├── bookings.py      # نظام الحجوزات
+│   ├── admin.py         # أوامر الإدارة
+│   ├── stats.py         # الإحصائيات
+│   ├── alliance.py      # التحالفات
+│   └── help.py          # المساعدة
+│
+├── database/            # قاعدة البيانات
+│   ├── models.py       # النماذج
+│   ├── db_manager.py   # المدير
+│   └── schema.sql      # الهيكل
+│
+├── utils/              # وظائف مساعدة
+│   ├── validators.py   # التحقق
+│   ├── formatters.py   # التنسيق
+│   ├── embeds.py       # Embeds
+│   ├── datetime_helper.py
+│   └── permissions.py
+│
+├── tasks/              # المهام المجدولة
+│   ├── reminders_task.py
+│   ├── cleanup_task.py
+│   └── backup_task.py
+│
+├── data/               # البيانات
+│   └── backups/
+│
+└── logs/               # السجلات
+```
+
+## ⚙️ الإعدادات
+
+### متغيرات البيئة (.env)
+
+```env
+# Discord Bot Token
+DISCORD_BOT_TOKEN=your_bot_token_here
+
+# Server Configuration
+GUILD_ID=your_server_id
+
+# Role IDs
+ADMIN_ROLE_ID=123456789
+MODERATOR_ROLE_ID=987654321
+
+# Channel IDs
+LOG_CHANNEL_ID=your_log_channel_id
+ANNOUNCEMENT_CHANNEL_ID=your_announcement_channel_id
+
+# Bot Settings
+MAX_ACTIVE_BOOKINGS=5
+LANGUAGE=ar
+TIMEZONE=Asia/Riyadh
+
+# Reminders
+REMINDER_24H=true
+REMINDER_1H=true
+REMINDER_NOW=true
+
+# Backup
+AUTO_BACKUP_HOURS=6
+```
+
+## 🔒 الأمان
+
+- التحقق من صلاحيات المستخدمين
+- حماية من SQL Injection
+- تشفير البيانات الحساسة
+- سجلات أمان شاملة
+- نسخ احتياطي تلقائي
+
+## 📊 قاعدة البيانات
+
+يستخدم البوت SQLite مع الجداول التالية:
+- `users` - المستخدمون
+- `bookings` - الحجوزات
+- `alliances` - التحالفات
+- `achievements` - الإنجازات
+- `logs` - السجلات
+
+## 🐛 استكشاف الأخطاء
+
+### البوت لا يستجيب للأوامر
+- تأكد من مزامنة الأوامر في `bot.py`
+- تحقق من صلاحيات البوت في السيرفر
+
+### قاعدة البيانات لا تعمل
+- تأكد من وجود مجلد `data/`
+- تحقق من صلاحيات الكتابة
+
+### التذكيرات لا ترسل
+- تأكد من إعدادات التذكيرات في `.env`
+- تحقق من سجلات الأخطاء في `logs/errors.log`
+
+## 📝 السجلات
+
+يتم حفظ السجلات في مجلد `logs/`:
+- `bot.log` - السجل الرئيسي
+- `errors.log` - الأخطاء فقط
+- `bookings.log` - عمليات الحجز
+
+## 🤝 المساهمة
+
+نرحب بالمساهمات! الرجاء:
+1. Fork المشروع
+2. إنشاء branch جديد
+3. Commit التغييرات
+4. Push إلى Branch
+5. فتح Pull Request
+
+## 📄 الترخيص
+
+هذا المشروع مرخص تحت MIT License.
+
+## 📞 الدعم
+
+للدعم والاستفسارات:
+- فتح Issue في GitHub
+- التواصل مع المطور
+
+## 🎉 شكر خاص
+
+شكراً لكل من ساهم في تطوير هذا البوت!
+
+---
+
+Made with ❤️ for Survival in the Frost Players
+
+</div>
