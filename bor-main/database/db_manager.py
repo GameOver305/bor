@@ -3,11 +3,15 @@
 """
 import aiosqlite
 import os
+import asyncio
+import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
 from .models import User, Booking, Alliance, Achievement, Log
 from config import config
+
+logger = logging.getLogger('db_manager')
 
 
 class DatabaseManager:
@@ -15,18 +19,88 @@ class DatabaseManager:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or config.DATABASE_PATH
-        self._directory_checked = False
+        self._initialized = False
+        self.max_retries = 3
+        self.retry_delay = 0.1  # Initial retry delay in seconds
     
     def _ensure_db_directory(self):
         """Ensure the database directory exists before connecting"""
-        if not self._directory_checked:
-            db_dir = os.path.dirname(self.db_path)
-            if db_dir:
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            try:
                 os.makedirs(db_dir, exist_ok=True)
-            self._directory_checked = True
+                logger.debug(f"Ensured database directory exists: {db_dir}")
+            except Exception as e:
+                logger.error(f"Failed to create database directory {db_dir}: {e}")
+                raise
+    
+    def _validate_db_path(self):
+        """Validate database path before connection"""
+        if not self.db_path:
+            raise ValueError("Database path is not configured")
+        
+        if not os.path.isabs(self.db_path):
+            logger.warning(f"Database path is not absolute: {self.db_path}")
+        
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir and not os.path.exists(db_dir):
+            logger.warning(f"Database directory does not exist: {db_dir}")
+            self._ensure_db_directory()
+    
+    async def _ensure_db_initialized(self):
+        """Ensure database is initialized, reinitialize if file is missing"""
+        db_exists = os.path.exists(self.db_path)
+        
+        if not db_exists or not self._initialized:
+            if not db_exists:
+                logger.warning(f"Database file not found at {self.db_path}, initializing...")
+            
+            try:
+                await self.initialize()
+                self._initialized = True
+                logger.info(f"Database initialized successfully at {self.db_path}")
+            except Exception as e:
+                logger.error(f"Failed to initialize database: {e}")
+                raise
+    
+    async def _execute_with_retry(self, operation, operation_name="database operation"):
+        """Execute a database operation with retry logic"""
+        last_exception = None
+        
+        for attempt in range(self.max_retries):
+            try:
+                # Validate and ensure directory exists
+                self._validate_db_path()
+                self._ensure_db_directory()
+                
+                # Ensure database is initialized
+                await self._ensure_db_initialized()
+                
+                # Execute the operation
+                result = await operation()
+                logger.debug(f"{operation_name} succeeded (attempt {attempt + 1})")
+                return result
+                
+            except Exception as e:
+                last_exception = e
+                if attempt < self.max_retries - 1:
+                    delay = self.retry_delay * (2 ** attempt)  # Exponential backoff
+                    logger.warning(
+                        f"{operation_name} failed (attempt {attempt + 1}/{self.max_retries}): {e}. "
+                        f"Retrying in {delay}s..."
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(
+                        f"{operation_name} failed after {self.max_retries} attempts: {e}"
+                    )
+        
+        # If all retries failed, raise the last exception
+        raise last_exception
 
     async def initialize(self):
         """تهيئة قاعدة البيانات وتطبيق توافق المخططات"""
+        self._validate_db_path()
         self._ensure_db_directory()
 
         async with aiosqlite.connect(self.db_path) as db:
@@ -38,6 +112,8 @@ class DatabaseManager:
             await db.executescript(schema)
             await self._ensure_compatibility(db)
             await db.commit()
+        
+        self._initialized = True
 
     async def _ensure_compatibility(self, db: aiosqlite.Connection):
         """توافق الإصدارات القديمة بدون كسر البيانات"""
@@ -96,39 +172,49 @@ class DatabaseManager:
 
     async def execute(self, query: str, params: tuple = ()) -> aiosqlite.Cursor:
         """تنفيذ استعلام"""
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            cursor = await db.execute(query, params)
-            await db.commit()
-            return cursor
+        async def _do_execute():
+            async with aiosqlite.connect(self.db_path) as db:
+                cursor = await db.execute(query, params)
+                await db.commit()
+                return cursor
+        
+        return await self._execute_with_retry(_do_execute, "execute query")
 
     async def fetchone(self, query: str, params: tuple = ()) -> Optional[tuple]:
         """جلب صف واحد"""
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            cursor = await db.execute(query, params)
-            return await cursor.fetchone()
+        async def _do_fetchone():
+            async with aiosqlite.connect(self.db_path) as db:
+                cursor = await db.execute(query, params)
+                return await cursor.fetchone()
+        
+        return await self._execute_with_retry(_do_fetchone, "fetchone query")
 
     async def fetchall(self, query: str, params: tuple = ()) -> List[tuple]:
         """جلب كل الصفوف"""
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            cursor = await db.execute(query, params)
-            return await cursor.fetchall()
+        async def _do_fetchall():
+            async with aiosqlite.connect(self.db_path) as db:
+                cursor = await db.execute(query, params)
+                return await cursor.fetchall()
+        
+        return await self._execute_with_retry(_do_fetchall, "fetchall query")
 
     async def _fetchone_row(self, query: str, params: tuple = ()):
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute(query, params)
-            return await cursor.fetchone()
+        async def _do_fetchone_row():
+            async with aiosqlite.connect(self.db_path) as db:
+                db.row_factory = aiosqlite.Row
+                cursor = await db.execute(query, params)
+                return await cursor.fetchone()
+        
+        return await self._execute_with_retry(_do_fetchone_row, "fetchone_row query")
 
     async def _fetchall_rows(self, query: str, params: tuple = ()):
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute(query, params)
-            return await cursor.fetchall()
+        async def _do_fetchall_rows():
+            async with aiosqlite.connect(self.db_path) as db:
+                db.row_factory = aiosqlite.Row
+                cursor = await db.execute(query, params)
+                return await cursor.fetchall()
+        
+        return await self._execute_with_retry(_do_fetchall_rows, "fetchall_rows query")
 
     def _row_to_user(self, row) -> Optional[User]:
         if not row:
@@ -252,27 +338,29 @@ class DatabaseManager:
     # ====== Booking Methods ======
 
     async def create_booking(self, booking: Booking) -> int:
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            cursor = await db.execute(
-                """INSERT INTO bookings
-                   (user_id, booking_type, player_name, player_id, alliance_name,
-                    scheduled_time, details, created_by, duration_days)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    booking.user_id,
-                    booking.booking_type,
-                    booking.player_name,
-                    booking.player_id,
-                    booking.alliance_name,
-                    booking.scheduled_time.isoformat() if isinstance(booking.scheduled_time, datetime) else booking.scheduled_time,
-                    booking.details,
-                    booking.created_by,
-                    booking.duration_days,
+        async def _do_create_booking():
+            async with aiosqlite.connect(self.db_path) as db:
+                cursor = await db.execute(
+                    """INSERT INTO bookings
+                       (user_id, booking_type, player_name, player_id, alliance_name,
+                        scheduled_time, details, created_by, duration_days)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        booking.user_id,
+                        booking.booking_type,
+                        booking.player_name,
+                        booking.player_id,
+                        booking.alliance_name,
+                        booking.scheduled_time.isoformat() if isinstance(booking.scheduled_time, datetime) else booking.scheduled_time,
+                        booking.details,
+                        booking.created_by,
+                        booking.duration_days,
+                    )
                 )
-            )
-            await db.commit()
-            return cursor.lastrowid
+                await db.commit()
+                return cursor.lastrowid
+        
+        return await self._execute_with_retry(_do_create_booking, "create booking")
 
     async def get_booking(self, booking_id: int) -> Optional[Booking]:
         row = await self._fetchone_row("SELECT * FROM bookings WHERE booking_id = ?", (booking_id,))
@@ -363,20 +451,22 @@ class DatabaseManager:
         else:
             leader_db_id = leader_id
 
-        self._ensure_db_directory()
-        async with aiosqlite.connect(self.db_path) as db:
-            cursor = await db.execute(
-                "INSERT INTO alliances (name, tag, leader_id, description, member_count) VALUES (?, ?, ?, ?, 1)",
-                (name, clean_tag, leader_db_id, description)
-            )
-            alliance_id = cursor.lastrowid
+        async def _do_create_alliance():
+            async with aiosqlite.connect(self.db_path) as db:
+                cursor = await db.execute(
+                    "INSERT INTO alliances (name, tag, leader_id, description, member_count) VALUES (?, ?, ?, ?, 1)",
+                    (name, clean_tag, leader_db_id, description)
+                )
+                alliance_id = cursor.lastrowid
 
-            await db.execute(
-                "UPDATE users SET alliance_id = ?, alliance_rank = 'R5', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
-                (alliance_id, leader_db_id)
-            )
-            await db.commit()
-            return alliance_id
+                await db.execute(
+                    "UPDATE users SET alliance_id = ?, alliance_rank = 'R5', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+                    (alliance_id, leader_db_id)
+                )
+                await db.commit()
+                return alliance_id
+        
+        return await self._execute_with_retry(_do_create_alliance, "create alliance")
 
     async def get_alliance(self, alliance_id: int) -> Optional[Alliance]:
         row = await self._fetchone_row("SELECT * FROM alliances WHERE alliance_id = ?", (alliance_id,))
