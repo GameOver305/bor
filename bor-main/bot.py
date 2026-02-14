@@ -43,6 +43,12 @@ class BookingBot(commands.Bot):
         # Register persistent views
         try:
             from utils.buttons import MainMenuView
+            from cogs.main_control_panel import MainControlPanelView, LanguageSelectView
+            from cogs.reservations_system import ReservationsMenuView, ReservationSectionView
+            from cogs.alliance_system import AllianceMenuView, AllianceMembersManagementView
+            from cogs.management_system import ManagementPanelView
+            
+            # Register main views
             self.add_view(MainMenuView())
             logger.info("✅ تم تسجيل Persistent Views")
         except Exception as e:
@@ -85,6 +91,15 @@ class BookingBot(commands.Bot):
         except Exception as e:
             logger.error(f"❌ فشل مزامنة الأوامر: {e}")
         
+        # تحميل المهام المجدولة
+        try:
+            await self.load_extension('tasks.reminders_task')
+            await self.load_extension('tasks.cleanup_task')
+            await self.load_extension('tasks.backup_task')
+            logger.info("✅ تم تحميل المهام المجدولة")
+        except Exception as e:
+            logger.error(f"⚠️ تحذير: فشل تحميل المهام المجدولة: {e}")
+        
         logger.info("✅ اكتمل إعداد البوت")
     
     async def on_ready(self):
@@ -98,15 +113,6 @@ class BookingBot(commands.Bot):
             name="مواعيد النجاة في الصقيع | /help"
         )
         await self.change_presence(activity=activity)
-        
-        # بدء المهام المجدولة
-        try:
-            await self.load_extension('tasks.reminders_task')
-            await self.load_extension('tasks.cleanup_task')
-            await self.load_extension('tasks.backup_task')
-            logger.info("✅ تم بدء المهام المجدولة")
-        except Exception as e:
-            logger.error(f"⚠️ تحذير: فشل تحميل المهام المجدولة: {e}")
     
     async def on_guild_join(self, guild):
         """عند انضمام البوت لسيرفر جديد"""
