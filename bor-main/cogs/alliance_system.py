@@ -142,15 +142,19 @@ class AllianceSystemCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction):
-        """Handle button interactions for alliance system"""
-        if interaction.type != discord.InteractionType.component:
-            return
+        self._register_button_handlers()
+    
+    def _register_button_handlers(self):
+        """تسجيل معالجات الأزرار في النظام المركزي"""
+        from utils.button_handler import button_handler
         
-        custom_id = interaction.data.get('custom_id', '')
+        # تسجيل معالج البادئة لجميع أزرار التحالفات
+        button_handler.register_prefix_handler('alliance_', self._handle_alliance_button)
         
+        logger.info("✅ Registered AllianceSystem button handlers")
+    
+    async def _handle_alliance_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار التحالفات"""
         # Alliance menu button routing
         if custom_id == 'alliance_info':
             await interaction.response.defer()
@@ -181,6 +185,11 @@ class AllianceSystemCog(commands.Cog):
         elif custom_id == 'alliance_back_to_menu':
             await interaction.response.defer()
             await self.show_alliance_menu(interaction)
+        
+        elif custom_id == 'alliance_members':
+            await interaction.response.defer()
+            await self._show_members(interaction)
+
 
 
     async def _safe_send(self, interaction: discord.Interaction, **kwargs):

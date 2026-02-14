@@ -213,6 +213,116 @@ class MainControlPanelCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+        self._register_button_handlers()
+
+    def _register_button_handlers(self):
+        """تسجيل معالجات الأزرار في النظام المركزي"""
+        from utils.button_handler import button_handler
+        
+        # تسجيل معالج البادئة لجميع أزرار اللوحة الرئيسية
+        button_handler.register_prefix_handler('main_btn_', self._handle_main_button)
+        button_handler.register_prefix_handler('lang_', self._handle_language_button)
+        button_handler.register_prefix_handler('myinfo_', self._handle_myinfo_button)
+        
+        logger.info("✅ Registered MainControlPanel button handlers")
+    
+    async def _handle_main_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار اللوحة الرئيسية"""
+        user_id = str(interaction.user.id)
+        
+        # Load user language
+        from database import db
+        await translator.load_user_language_from_db(db, user_id)
+        
+        # Route to appropriate handler
+        if custom_id == 'main_btn_alliance':
+            await self._handle_alliance(interaction)
+        elif custom_id == 'main_btn_reservations':
+            await self._handle_reservations(interaction)
+        elif custom_id == 'main_btn_management':
+            await self._handle_management(interaction)
+        elif custom_id == 'main_btn_language':
+            await self._handle_language(interaction)
+        elif custom_id == 'main_btn_my_info':
+            await self._handle_my_info(interaction)
+    
+    async def _handle_language_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار اختيار اللغة"""
+        user_id = str(interaction.user.id)
+        
+        if custom_id == 'lang_ar':
+            await self._change_language(interaction, 'ar')
+        elif custom_id == 'lang_en':
+            await self._change_language(interaction, 'en')
+        elif custom_id == 'lang_back':
+            await self._back_to_main_menu(interaction)
+    
+    async def _handle_myinfo_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار معلوماتي"""
+        if custom_id == 'myinfo_back':
+            await self._back_to_main_menu(interaction)
+    
+    async def _back_to_main_menu(self, interaction: discord.Interaction):
+        """العودة إلى القائمة الرئيسية"""
+        user_id = str(interaction.user.id)
+        from database import db
+        await translator.load_user_language_from_db(db, user_id)
+        
+        is_admin = permissions.is_admin(interaction.user)
+        is_owner = permissions.is_owner(interaction.user)
+        view = MainControlPanelView(user_id, is_admin, is_owner)
+        
+        embed = create_colored_embed(
+            get_text(user_id, 'main_menu.title'),
+            get_text(user_id, 'main_menu.description'),
+            'info'
+        )
+        
+        await self._safe_edit(interaction, embed=embed, view=view)
+    
+    async def _change_language(self, interaction: discord.Interaction, lang_code: str):
+        """تغيير لغة المستخدم"""
+        user_id = str(interaction.user.id)
+        from database import db
+        
+        # Set language in translator
+        translator.set_user_language(user_id, lang_code)
+        
+        # Save to database
+        try:
+            user = await db.get_user_by_discord_id(user_id)
+            if user:
+                await db.set_user_language(user_id, lang_code)
+        except Exception as e:
+            logger.error(f"Error saving language: {e}")
+        
+        # Success message
+        embed = create_colored_embed(
+            get_text(user_id, 'common.success'),
+            get_text(user_id, 'language.changed'),
+            'success'
+        )
+        
+        if interaction.response.is_done():
+            await interaction.edit_original_response(embed=embed, view=None)
+        else:
+            await interaction.response.edit_message(embed=embed, view=None)
+        
+        # Reopen main menu after 1 second
+        import asyncio
+        await asyncio.sleep(1)
+        
+        is_admin = permissions.is_admin(interaction.user)
+        is_owner = permissions.is_owner(interaction.user)
+        view = MainControlPanelView(user_id, is_admin, is_owner)
+        
+        embed = create_colored_embed(
+            get_text(user_id, 'main_menu.title'),
+            get_text(user_id, 'main_menu.description'),
+            'info'
+        )
+        
+        await interaction.edit_original_response(embed=embed, view=view)
 
     async def _safe_send(self, interaction: discord.Interaction, **kwargs):
         if interaction.response.is_done():
@@ -298,40 +408,6 @@ class MainControlPanelCog(commands.Cog):
         )
         
         await self._safe_send(interaction, embed=embed, view=view, ephemeral=True)
-    
-    @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction):
-        """Handle button interactions"""
-        if interaction.type != discord.InteractionType.component:
-            return
-        
-        custom_id = (interaction.data or {}).get('custom_id', '')
-        
-        # Only handle main control panel buttons
-        if not custom_id.startswith('main_btn_'):
-            return
-        
-        user_id = str(interaction.user.id)
-        
-        # Load user language
-        from database import db
-        await translator.load_user_language_from_db(db, user_id)
-        
-        # Route to appropriate handler
-        if custom_id == 'main_btn_alliance':
-            await self._handle_alliance(interaction)
-        
-        elif custom_id == 'main_btn_reservations':
-            await self._handle_reservations(interaction)
-        
-        elif custom_id == 'main_btn_management':
-            await self._handle_management(interaction)
-        
-        elif custom_id == 'main_btn_language':
-            await self._handle_language(interaction)
-        
-        elif custom_id == 'main_btn_my_info':
-            await self._handle_my_info(interaction)
     
     async def _handle_alliance(self, interaction: discord.Interaction):
         """Handle alliance button"""

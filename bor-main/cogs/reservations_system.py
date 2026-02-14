@@ -291,6 +291,50 @@ class ReservationsSystemCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+        self._register_button_handlers()
+    
+    def _register_button_handlers(self):
+        """تسجيل معالجات الأزرار في النظام المركزي"""
+        from utils.button_handler import button_handler
+        
+        # تسجيل معالج البادئة لجميع أزرار الحجوزات
+        button_handler.register_prefix_handler('res_', self._handle_reservation_button)
+        
+        logger.info("✅ Registered ReservationsSystem button handlers")
+    
+    async def _handle_reservation_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار الحجوزات"""
+        user_id = str(interaction.user.id)
+        
+        # Load user language
+        await translator.load_user_language_from_db(db, user_id)
+        
+        # Handle section selection
+        if custom_id in ['res_building', 'res_training', 'res_research']:
+            section_type = custom_id.replace('res_', '')
+            await self._show_section(interaction, section_type)
+        
+        # Handle create reservation
+        elif custom_id.startswith('res_create_'):
+            section_type = custom_id.replace('res_create_', '')
+            modal = ReservationModal(user_id, section_type)
+            await interaction.response.send_modal(modal)
+        
+        # Handle view schedule
+        elif custom_id.startswith('res_schedule_'):
+            section_type = custom_id.replace('res_schedule_', '')
+            await self._show_schedule(interaction, section_type)
+        
+        # Handle my reservations
+        elif custom_id == 'res_my_reservations':
+            await self._show_my_reservations(interaction)
+        
+        # Handle back buttons
+        elif custom_id == 'res_back_to_menu':
+            await self.show_reservations_menu(interaction)
+        
+        elif custom_id == 'res_back':
+            await self._back_to_main(interaction)
 
     async def _safe_send(self, interaction: discord.Interaction, **kwargs):
         if interaction.response.is_done():
@@ -328,50 +372,7 @@ class ReservationsSystemCog(commands.Cog):
         )
         
         await self._safe_edit(interaction, embed=embed, view=view)
-    
-    @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction):
-        """Handle reservation interactions"""
-        if interaction.type != discord.InteractionType.component:
-            return
-        
-        custom_id = (interaction.data or {}).get('custom_id', '')
-        
-        # Only handle reservation buttons
-        if not custom_id.startswith('res_'):
-            return
-        
-        user_id = str(interaction.user.id)
-        
-        # Load user language
-        await translator.load_user_language_from_db(db, user_id)
-        
-        # Handle section selection
-        if custom_id in ['res_building', 'res_training', 'res_research']:
-            section_type = custom_id.replace('res_', '')
-            await self._show_section(interaction, section_type)
-        
-        # Handle create reservation
-        elif custom_id.startswith('res_create_'):
-            section_type = custom_id.replace('res_create_', '')
-            modal = ReservationModal(user_id, section_type)
-            await interaction.response.send_modal(modal)
-        
-        # Handle view schedule
-        elif custom_id.startswith('res_schedule_'):
-            section_type = custom_id.replace('res_schedule_', '')
-            await self._show_schedule(interaction, section_type)
-        
-        # Handle my reservations
-        elif custom_id == 'res_my_reservations':
-            await self._show_my_reservations(interaction)
-        
-        # Handle back buttons
-        elif custom_id == 'res_back_to_menu':
-            await self.show_reservations_menu(interaction)
-        
-        elif custom_id == 'res_back':
-            await self._back_to_main(interaction)
+
     
     async def _show_section(self, interaction: discord.Interaction, section_type: str):
         """Show a specific section"""
