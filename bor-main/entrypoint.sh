@@ -75,6 +75,10 @@ echo ""
 
 # Check Python version
 echo "🐍 Checking Python version..."
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Error: python3 is not installed"
+    exit 1
+fi
 PYTHON_VERSION=$(python3 --version 2>&1)
 echo "   $PYTHON_VERSION"
 echo ""
