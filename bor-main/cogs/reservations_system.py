@@ -22,7 +22,7 @@ class ReservationsMenuView(discord.ui.View):
     """Reservations main menu"""
     
     def __init__(self, user_id: str):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self._build_buttons()
     

@@ -21,7 +21,7 @@ class ManagementPanelView(discord.ui.View):
     """Management panel main view"""
     
     def __init__(self, user_id: str, is_owner: bool = False):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self.is_owner = is_owner
         self._build_buttons()

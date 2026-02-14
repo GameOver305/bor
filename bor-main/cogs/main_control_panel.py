@@ -87,7 +87,7 @@ class LanguageSelectView(discord.ui.View):
     """Language selection view"""
     
     def __init__(self, user_id: str):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
     
     @discord.ui.button(label="🇸🇦 العربية", style=discord.ButtonStyle.success, custom_id='lang_ar')
@@ -176,7 +176,7 @@ class MyInfoView(discord.ui.View):
     """My Info display view"""
     
     def __init__(self, user_id: str):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
     
     @discord.ui.button(label="🔙 رجوع | Back", style=discord.ButtonStyle.secondary, custom_id='myinfo_back')
