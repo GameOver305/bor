@@ -39,10 +39,11 @@ class Config:
     # Backup Settings
     AUTO_BACKUP_HOURS: int = int(os.getenv('AUTO_BACKUP_HOURS', 6))
     
-    # Paths
-    DATABASE_PATH: str = 'data/bookings.db'
-    BACKUP_DIR: str = 'data/backups'
-    LOGS_DIR: str = 'logs'
+    # Paths - Use absolute paths to avoid working directory issues
+    _BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
+    DATABASE_PATH: str = os.path.abspath(os.path.join(_BASE_DIR, 'data', 'bookings.db'))
+    BACKUP_DIR: str = os.path.abspath(os.path.join(_BASE_DIR, 'data', 'backups'))
+    LOGS_DIR: str = os.path.abspath(os.path.join(_BASE_DIR, 'logs'))
     
     # Booking Types
     BOOKING_TYPES = {
