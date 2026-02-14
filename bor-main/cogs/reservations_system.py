@@ -87,7 +87,7 @@ class ReservationSectionView(discord.ui.View):
     """View for a specific reservation section (Building/Training/Research)"""
     
     def __init__(self, user_id: str, section_type: str):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self.section_type = section_type  # 'building', 'training', 'research'
         self._build_buttons()

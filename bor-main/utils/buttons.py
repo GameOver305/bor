@@ -166,7 +166,7 @@ class MainMenuView(ui.View):
 class BookingTypeSelectView(ui.View):
     """اختيار نوع الحجز"""
     def __init__(self):
-        super().__init__(timeout=300)
+        super().__init__(timeout=None)  # Persistent view
     
     @ui.button(label="البناء", emoji="🏗️", style=discord.ButtonStyle.primary, custom_id="booking_type_building")
     async def building_button(self, interaction: discord.Interaction, button: ui.Button):
@@ -294,7 +294,7 @@ class BookingDetailsModal(ui.Modal, title="تفاصيل الحجز"):
 class BookingsActionsView(ui.View):
     """أزرار إجراءات الحجوزات"""
     def __init__(self):
-        super().__init__(timeout=300)
+        super().__init__(timeout=None)  # Persistent view
     
     @ui.button(label="🔄 تحديث", style=discord.ButtonStyle.secondary)
     async def refresh_button(self, interaction: discord.Interaction, button: ui.Button):
@@ -309,7 +309,7 @@ class BookingsActionsView(ui.View):
 class AllianceMenuView(ui.View):
     """قائمة التحالفات"""
     def __init__(self):
-        super().__init__(timeout=300)
+        super().__init__(timeout=None)  # Persistent view
     
     @ui.button(label="🏰 تحالفي", style=discord.ButtonStyle.primary)
     async def my_alliance_button(self, interaction: discord.Interaction, button: ui.Button):

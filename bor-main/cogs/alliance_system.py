@@ -115,7 +115,7 @@ class AllianceMembersManagementView(discord.ui.View):
     """View for managing alliance members"""
     
     def __init__(self, user_id: str, members_data: list):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self.members_data = members_data
         
