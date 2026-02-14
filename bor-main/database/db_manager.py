@@ -15,13 +15,29 @@ logger = logging.getLogger('db_manager')
 
 
 class DatabaseManager:
-    """مدير قاعدة البيانات"""
+    """
+    مدير قاعدة البيانات - Database Manager
+    
+    Provides robust database operations with automatic recovery from connection failures.
+    """
 
-    def __init__(self, db_path: str = None):
+    def __init__(self, db_path: str = None, max_retries: int = 3, retry_delay: float = 0.1):
+        """
+        Initialize database manager with configurable retry behavior.
+        
+        Args:
+            db_path: Path to the SQLite database file. Defaults to config.DATABASE_PATH
+            max_retries: Maximum number of retry attempts for database operations (default: 3)
+                       This handles transient failures and allows time for recovery
+            retry_delay: Initial delay in seconds between retries (default: 0.1)
+                        Uses exponential backoff: 0.1s, 0.2s, 0.4s for attempts 1, 2, 3
+                        Capped at 2 seconds to prevent excessive wait times
+        """
         self.db_path = db_path or config.DATABASE_PATH
         self._initialized = False
-        self.max_retries = 3
-        self.retry_delay = 0.1  # Initial retry delay in seconds
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
+        self.max_delay = 2.0  # Maximum delay cap in seconds
     
     def _ensure_db_directory(self):
         """Ensure the database directory exists before connecting"""
@@ -64,7 +80,12 @@ class DatabaseManager:
                 raise
     
     async def _execute_with_retry(self, operation, operation_name="database operation"):
-        """Execute a database operation with retry logic"""
+        """
+        Execute a database operation with retry logic.
+        
+        Uses exponential backoff with a maximum delay cap to handle transient failures
+        while preventing excessive wait times.
+        """
         last_exception = None
         
         for attempt in range(self.max_retries):
@@ -84,7 +105,8 @@ class DatabaseManager:
             except Exception as e:
                 last_exception = e
                 if attempt < self.max_retries - 1:
-                    delay = self.retry_delay * (2 ** attempt)  # Exponential backoff
+                    # Exponential backoff with maximum delay cap
+                    delay = min(self.retry_delay * (2 ** attempt), self.max_delay)
                     logger.warning(
                         f"{operation_name} failed (attempt {attempt + 1}/{self.max_retries}): {e}. "
                         f"Retrying in {delay}s..."
