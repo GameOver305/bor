@@ -16,11 +16,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY . .
 
+# Make entrypoint script executable
+RUN chmod +x entrypoint.sh
+
 # Create necessary directories
 RUN mkdir -p data/backups logs
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Run the bot
-CMD ["python", "bot.py"]
+# Use entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
