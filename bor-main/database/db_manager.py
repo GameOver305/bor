@@ -20,24 +20,34 @@ class DatabaseManager:
     
     Provides robust database operations with automatic recovery from connection failures.
     """
+    
+    # Default retry configuration constants
+    DEFAULT_MAX_RETRIES = 3
+    DEFAULT_RETRY_DELAY = 0.1  # seconds
+    DEFAULT_MAX_DELAY = 2.0    # seconds
 
-    def __init__(self, db_path: str = None, max_retries: int = 3, retry_delay: float = 0.1):
+    def __init__(self, db_path: str = None, max_retries: int = None, 
+                 retry_delay: float = None, max_delay: float = None):
         """
         Initialize database manager with configurable retry behavior.
         
         Args:
             db_path: Path to the SQLite database file. Defaults to config.DATABASE_PATH
             max_retries: Maximum number of retry attempts for database operations (default: 3)
-                       This handles transient failures and allows time for recovery
+                        This handles transient failures and allows time for recovery
             retry_delay: Initial delay in seconds between retries (default: 0.1)
-                        Uses exponential backoff: 0.1s, 0.2s, 0.4s for attempts 1, 2, 3
-                        Capped at 2 seconds to prevent excessive wait times
+                        Uses exponential backoff with zero-indexed attempts:
+                        - Attempt 0: 0.1s (retry_delay * 2^0)
+                        - Attempt 1: 0.2s (retry_delay * 2^1)
+                        - Attempt 2: 0.4s (retry_delay * 2^2)
+            max_delay: Maximum delay cap in seconds (default: 2.0)
+                      Prevents excessive wait times if max_retries is increased
         """
         self.db_path = db_path or config.DATABASE_PATH
         self._initialized = False
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.max_delay = 2.0  # Maximum delay cap in seconds
+        self.max_retries = max_retries if max_retries is not None else self.DEFAULT_MAX_RETRIES
+        self.retry_delay = retry_delay if retry_delay is not None else self.DEFAULT_RETRY_DELAY
+        self.max_delay = max_delay if max_delay is not None else self.DEFAULT_MAX_DELAY
     
     def _ensure_db_directory(self):
         """Ensure the database directory exists before connecting"""

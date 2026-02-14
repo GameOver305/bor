@@ -83,7 +83,9 @@ async def test_database_robustness():
         print("\n✅ Test 7: Verify other operations work after recovery")
         result = await db_manager.fetchone("SELECT COUNT(*) FROM users")
         user_count = result[0] if result else 0
-        print(f"✅ Query works: found {user_count} users")
+        # After directory deletion and recovery, only user3 should exist
+        assert user_count == 1, f"Expected 1 user after recovery, found {user_count}"
+        print(f"✅ Query works: found {user_count} user(s) as expected")
         
         # Test 8: Test with multiple rapid operations
         print("\n✅ Test 8: Test multiple rapid operations")

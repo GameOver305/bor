@@ -58,6 +58,9 @@ async def test_scheduled_task_scenario():
         print("\n✅ Step 2: Create test data")
         user1 = await db_manager.get_or_create_user("111", "User1", "P1")
         user2 = await db_manager.get_or_create_user("222", "User2", "P2")
+        assert user1.discord_id == "111", "User1 should be created correctly"
+        assert user2.discord_id == "222", "User2 should be created correctly"
+        print(f"✅ Created users: {user1.username}, {user2.username}")
         
         # Create some bookings
         booking1 = Booking(
