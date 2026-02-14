@@ -39,20 +39,6 @@ class BookingBot(commands.Bot):
     async def setup_hook(self):
         """إعداد البوت"""
         logger.info("🔧 بدء إعداد البوت...")
-
-        # Register persistent views
-        try:
-            from utils.buttons import MainMenuView
-            from cogs.main_control_panel import MainControlPanelView, LanguageSelectView
-            from cogs.reservations_system import ReservationsMenuView, ReservationSectionView
-            from cogs.alliance_system import AllianceMenuView, AllianceMembersManagementView
-            from cogs.management_system import ManagementPanelView
-            
-            # Register main views
-            self.add_view(MainMenuView())
-            logger.info("✅ تم تسجيل Persistent Views")
-        except Exception as e:
-            logger.warning(f"⚠️ تعذر تسجيل Persistent Views: {e}")
         
         # تهيئة قاعدة البيانات
         try:
@@ -61,6 +47,13 @@ class BookingBot(commands.Bot):
         except Exception as e:
             logger.error(f"❌ فشل تهيئة قاعدة البيانات: {e}")
             raise
+        
+        # تحميل نظام معالجة الأزرار أولاً (Global Button Handler)
+        try:
+            await self.load_extension('utils.button_handler')
+            logger.info("✅ تم تحميل نظام معالجة الأزرار")
+        except Exception as e:
+            logger.error(f"❌ فشل تحميل نظام معالجة الأزرار: {e}")
         
         # تحميل الـ Cogs
         cogs_to_load = [
@@ -77,6 +70,16 @@ class BookingBot(commands.Bot):
                 logger.info(f"✅ تم تحميل {cog}")
             except Exception as e:
                 logger.error(f"❌ فشل تحميل {cog}: {e}")
+        
+        # Register persistent views (بعد تحميل الـ Cogs)
+        try:
+            from utils.buttons import MainMenuView
+            
+            # Register main menu view as persistent
+            self.add_view(MainMenuView())
+            logger.info("✅ تم تسجيل Persistent Views")
+        except Exception as e:
+            logger.warning(f"⚠️ تعذر تسجيل Persistent Views: {e}")
         
         # مزامنة الأوامر
         try:

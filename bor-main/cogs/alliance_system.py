@@ -27,7 +27,7 @@ class AllianceMenuView(discord.ui.View):
     """Alliance main menu"""
     
     def __init__(self, user_id: str, in_alliance: bool = False, has_permissions: bool = False):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self.in_alliance = in_alliance
         self.has_permissions = has_permissions
@@ -115,7 +115,7 @@ class AllianceMembersManagementView(discord.ui.View):
     """View for managing alliance members"""
     
     def __init__(self, user_id: str, members_data: list):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self.members_data = members_data
         
@@ -142,15 +142,19 @@ class AllianceSystemCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction):
-        """Handle button interactions for alliance system"""
-        if interaction.type != discord.InteractionType.component:
-            return
+        self._register_button_handlers()
+    
+    def _register_button_handlers(self):
+        """تسجيل معالجات الأزرار في النظام المركزي"""
+        from utils.button_handler import button_handler
         
-        custom_id = interaction.data.get('custom_id', '')
+        # تسجيل معالج البادئة لجميع أزرار التحالفات
+        button_handler.register_prefix_handler('alliance_', self._handle_alliance_button)
         
+        logger.info("✅ Registered AllianceSystem button handlers")
+    
+    async def _handle_alliance_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار التحالفات"""
         # Alliance menu button routing
         if custom_id == 'alliance_info':
             await interaction.response.defer()
@@ -181,6 +185,11 @@ class AllianceSystemCog(commands.Cog):
         elif custom_id == 'alliance_back_to_menu':
             await interaction.response.defer()
             await self.show_alliance_menu(interaction)
+        
+        elif custom_id == 'alliance_members':
+            await interaction.response.defer()
+            await self._show_members(interaction)
+
 
 
     async def _safe_send(self, interaction: discord.Interaction, **kwargs):

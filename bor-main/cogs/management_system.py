@@ -21,7 +21,7 @@ class ManagementPanelView(discord.ui.View):
     """Management panel main view"""
     
     def __init__(self, user_id: str, is_owner: bool = False):
-        super().__init__(timeout=180)
+        super().__init__(timeout=None)  # Persistent view - no timeout
         self.user_id = user_id
         self.is_owner = is_owner
         self._build_buttons()
@@ -98,53 +98,19 @@ class ManagementSystemCog(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-
-    async def _safe_send(self, interaction: discord.Interaction, **kwargs):
-        if interaction.response.is_done():
-            return await interaction.followup.send(**kwargs)
-        return await interaction.response.send_message(**kwargs)
-
-    async def _safe_edit(self, interaction: discord.Interaction, **kwargs):
-        if interaction.response.is_done():
-            return await interaction.edit_original_response(**kwargs)
-        return await interaction.response.edit_message(**kwargs)
+        self._register_button_handlers()
     
-    async def show_management_panel(self, interaction: discord.Interaction):
-        """Show management panel"""
-        user_id = str(interaction.user.id)
+    def _register_button_handlers(self):
+        """تسجيل معالجات الأزرار في النظام المركزي"""
+        from utils.button_handler import button_handler
         
-        # Check permissions
-        if not permissions.is_admin(interaction.user) and not permissions.is_owner(interaction.user):
-            await self._safe_send(
-                interaction,
-                content=get_text(user_id, 'admin.no_permission'),
-                ephemeral=True
-            )
-            return
+        # تسجيل معالج البادئة لجميع أزرار الإدارة
+        button_handler.register_prefix_handler('mgmt_', self._handle_management_button)
         
-        is_owner = permissions.is_owner(interaction.user)
-        view = ManagementPanelView(user_id, is_owner)
-        
-        embed = create_colored_embed(
-            get_text(user_id, 'admin.panel_title'),
-            get_text(user_id, 'admin.panel_desc'),
-            'warning'
-        )
-        
-        await self._safe_edit(interaction, embed=embed, view=view)
+        logger.info("✅ Registered ManagementSystem button handlers")
     
-    @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction):
-        """Handle management interactions"""
-        if interaction.type != discord.InteractionType.component:
-            return
-        
-        custom_id = (interaction.data or {}).get('custom_id', '')
-        
-        # Only handle management buttons
-        if not custom_id.startswith('mgmt_'):
-            return
-        
+    async def _handle_management_button(self, interaction: discord.Interaction, custom_id: str):
+        """معالجة أزرار الإدارة"""
         user_id = str(interaction.user.id)
         
         # Load user language
@@ -180,6 +146,41 @@ class ManagementSystemCog(commands.Cog):
         
         elif custom_id == 'mgmt_back_to_panel':
             await self.show_management_panel(interaction)
+
+    async def _safe_send(self, interaction: discord.Interaction, **kwargs):
+        if interaction.response.is_done():
+            return await interaction.followup.send(**kwargs)
+        return await interaction.response.send_message(**kwargs)
+
+    async def _safe_edit(self, interaction: discord.Interaction, **kwargs):
+        if interaction.response.is_done():
+            return await interaction.edit_original_response(**kwargs)
+        return await interaction.response.edit_message(**kwargs)
+    
+    async def show_management_panel(self, interaction: discord.Interaction):
+        """Show management panel"""
+        user_id = str(interaction.user.id)
+        
+        # Check permissions
+        if not permissions.is_admin(interaction.user) and not permissions.is_owner(interaction.user):
+            await self._safe_send(
+                interaction,
+                content=get_text(user_id, 'admin.no_permission'),
+                ephemeral=True
+            )
+            return
+        
+        is_owner = permissions.is_owner(interaction.user)
+        view = ManagementPanelView(user_id, is_owner)
+        
+        embed = create_colored_embed(
+            get_text(user_id, 'admin.panel_title'),
+            get_text(user_id, 'admin.panel_desc'),
+            'warning'
+        )
+        
+        await self._safe_edit(interaction, embed=embed, view=view)
+
     
     async def _show_alliance_management(self, interaction: discord.Interaction):
         """Show alliance management"""
