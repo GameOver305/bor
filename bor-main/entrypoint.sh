@@ -27,12 +27,17 @@ if [ -f .env ]; then
     echo "🔧 Loading environment variables from .env..."
     # Export variables from .env file safely
     # Filter out comments and empty lines, only keep valid variable assignments
-    while IFS='=' read -r key value; do
-        # Skip if key is empty or starts with #
-        [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
-        # Export the variable
-        export "$key=$value"
-    done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env)
+    while IFS= read -r line; do
+        # Skip empty lines and comments
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        # Extract key and value (split on first = only)
+        key="${line%%=*}"
+        value="${line#*=}"
+        # Validate key format
+        [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+        # Export the variable with proper quoting
+        export "$key"="$value"
+    done < .env
     echo "✅ Environment variables loaded"
 else
     echo "⚠️  Warning: .env file not found, using environment variables only"
