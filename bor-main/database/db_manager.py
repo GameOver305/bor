@@ -22,9 +22,13 @@ class DatabaseManager:
     """
     
     # Default retry configuration constants
-    DEFAULT_MAX_RETRIES = 3
-    DEFAULT_RETRY_DELAY = 0.1  # seconds
-    DEFAULT_MAX_DELAY = 2.0    # seconds
+    # These values balance reliability with responsiveness for production use
+    DEFAULT_MAX_RETRIES = 3      # Sufficient for transient failures (network glitches, temporary locks)
+                                 # without excessive delay (total max: 0.7s for all retries)
+    DEFAULT_RETRY_DELAY = 0.1    # Initial delay in seconds - small enough to be imperceptible
+                                 # to users while allowing time for transient issues to resolve
+    DEFAULT_MAX_DELAY = 2.0      # Cap prevents excessive wait times if max_retries is increased
+                                 # in production, maintaining reasonable response times
 
     def __init__(self, db_path: str = None, max_retries: int = None, 
                  retry_delay: float = None, max_delay: float = None):
