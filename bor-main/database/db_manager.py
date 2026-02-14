@@ -15,10 +15,16 @@ class DatabaseManager:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or config.DATABASE_PATH
+    
+    def _ensure_db_directory(self):
+        """Ensure the database directory exists before connecting"""
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
 
     async def initialize(self):
-        """تهيئة قاعدة البيانات وتطبيق توافق المخطط"""
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        """تهيئة قاعدة البيانات وتطبيق توافق المخططات"""
+        self._ensure_db_directory()
 
         async with aiosqlite.connect(self.db_path) as db:
             with open('database/schema.sql', 'r', encoding='utf-8') as f:
@@ -85,6 +91,7 @@ class DatabaseManager:
 
     async def execute(self, query: str, params: tuple = ()) -> aiosqlite.Cursor:
         """تنفيذ استعلام"""
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(query, params)
             await db.commit()
@@ -92,23 +99,27 @@ class DatabaseManager:
 
     async def fetchone(self, query: str, params: tuple = ()) -> Optional[tuple]:
         """جلب صف واحد"""
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(query, params)
             return await cursor.fetchone()
 
     async def fetchall(self, query: str, params: tuple = ()) -> List[tuple]:
         """جلب كل الصفوف"""
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(query, params)
             return await cursor.fetchall()
 
     async def _fetchone_row(self, query: str, params: tuple = ()):
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             cursor = await db.execute(query, params)
             return await cursor.fetchone()
 
     async def _fetchall_rows(self, query: str, params: tuple = ()):
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             cursor = await db.execute(query, params)
@@ -236,6 +247,7 @@ class DatabaseManager:
     # ====== Booking Methods ======
 
     async def create_booking(self, booking: Booking) -> int:
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(
                 """INSERT INTO bookings
@@ -346,6 +358,7 @@ class DatabaseManager:
         else:
             leader_db_id = leader_id
 
+        self._ensure_db_directory()
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(
                 "INSERT INTO alliances (name, tag, leader_id, description, member_count) VALUES (?, ?, ?, ?, 1)",

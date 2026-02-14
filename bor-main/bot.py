@@ -140,6 +140,16 @@ async def main():
         logger.error("❌ فشل التحقق من الإعدادات")
         return
     
+    # Ensure required directories exist
+    try:
+        os.makedirs(os.path.dirname(config.DATABASE_PATH), exist_ok=True)
+        os.makedirs(config.BACKUP_DIR, exist_ok=True)
+        os.makedirs(config.LOGS_DIR, exist_ok=True)
+        logger.info("✅ تم التحقق من المجلدات المطلوبة")
+    except Exception as e:
+        logger.error(f"❌ فشل إنشاء المجلدات المطلوبة: {e}")
+        return
+    
     # إنشاء البوت
     bot = BookingBot()
     
