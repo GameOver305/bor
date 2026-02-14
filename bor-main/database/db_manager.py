@@ -27,7 +27,9 @@ class DatabaseManager:
         self._ensure_db_directory()
 
         async with aiosqlite.connect(self.db_path) as db:
-            with open('database/schema.sql', 'r', encoding='utf-8') as f:
+            # Use absolute path for schema file
+            schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
+            with open(schema_path, 'r', encoding='utf-8') as f:
                 schema = f.read()
 
             await db.executescript(schema)
