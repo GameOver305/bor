@@ -15,12 +15,15 @@ class DatabaseManager:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or config.DATABASE_PATH
+        self._directory_checked = False
     
     def _ensure_db_directory(self):
         """Ensure the database directory exists before connecting"""
-        db_dir = os.path.dirname(self.db_path)
-        if db_dir:
-            os.makedirs(db_dir, exist_ok=True)
+        if not self._directory_checked:
+            db_dir = os.path.dirname(self.db_path)
+            if db_dir:
+                os.makedirs(db_dir, exist_ok=True)
+            self._directory_checked = True
 
     async def initialize(self):
         """تهيئة قاعدة البيانات وتطبيق توافق المخططات"""
